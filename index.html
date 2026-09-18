@@ -1,141 +1,109 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="zh-TW">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2113.5">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
-    p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px 'PingFang TC'}
-    span.s1 {font: 12.0px 'PingFang TC'}
-    span.s2 {font: 12.0px 'Apple Color Emoji'}
-    span.s3 {font: 12.0px Helvetica}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>效期拍照辨識測試</title>
+    <!-- 修正後的 Tesseract.js 正確 CDN 網址 -->
+    <script src="https://jsdelivr.net"></script>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; text-align: center; background-color: #f5f5f5; }
+        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        video, canvas { width: 100%; max-width: 400px; border-radius: 4px; background: #000; margin-top: 10px; }
+        canvas { display: none; }
+        button { background-color: #007bff; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 4px; cursor: pointer; margin: 10px 5px; }
+        button:disabled { background-color: #ccc; }
+        #result-box { margin-top: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 4px; text-align: left; background: #fafafa; }
+        .status { color: #666; font-style: italic; }
+        .highlight { color: #d9534f; font-weight: bold; font-size: 1.2em; }
+    </style>
 </head>
 <body>
-<p class="p1">&lt;!DOCTYPE html&gt;</p>
-<p class="p1">&lt;html lang="zh-TW"&gt;</p>
-<p class="p1">&lt;head&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;title&gt;<span class="s1">效期拍照辨識測試</span>&lt;/title&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- <span class="s1">引入</span> Tesseract.js CDN --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://jsdelivr.net"&gt;&lt;/script&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;style&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; text-align: center; background-color: #f5f5f5; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>video, canvas { width: 100%; max-width: 400px; border-radius: 4px; background: #000; margin-top: 10px; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>canvas { display: none; } /* <span class="s1">隱藏畫布，只用來擷取圖片</span> */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>button { background-color: #007bff; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 4px; cursor: pointer; margin: 10px 5px; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>button:disabled { background-color: #ccc; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>#result-box { margin-top: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 4px; text-align: left; background: #fafafa; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.status { color: #666; font-style: italic; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.highlight { color: #d9534f; font-weight: bold; font-size: 1.2em; }</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</p>
-<p class="p1">&lt;/head&gt;</p>
-<p class="p1">&lt;body&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;div class="container"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;h2&gt;<span class="s2">📸</span> <span class="s1">效期拍照辨識測試</span>&lt;/h2&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;p&gt;<span class="s1">請將鏡頭對準包裝上的日期（如：</span>HSD/EXP/<span class="s1">數字）</span>&lt;/p&gt;</p>
-<p class="p2"><span class="Apple-converted-space">    </span></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- <span class="s1">視訊畫面</span> --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;video id="video" autoplay playsinline&gt;&lt;/video&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;canvas id="canvas"&gt;&lt;/canvas&gt;</p>
-<p class="p2"><span class="Apple-converted-space">    </span></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;br&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;button id="btn-capture"&gt;<span class="s2">📷</span> <span class="s1">拍照並辨識</span>&lt;/button&gt;</p>
-<p class="p2"><span class="Apple-converted-space">    </span></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- <span class="s1">結果顯示區</span> --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div id="result-box"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;p&gt;&lt;strong&gt;<span class="s1">系統狀態：</span>&lt;/strong&gt; &lt;span id="status" class="status"&gt;<span class="s1">等待拍照</span>...&lt;/span&gt;&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;p&gt;&lt;strong&gt;<span class="s1">辨識出的所有文字：</span>&lt;/strong&gt;&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;pre id="raw-text" style="white-space: pre-wrap; background: #eee; padding: 10px; border-radius: 4px; min-height: 50px;"&gt;&lt;/pre&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;p&gt;&lt;strong&gt;<span class="s1">偵測到的疑似日期：</span>&lt;/strong&gt; &lt;span id="detected-date" class="highlight"&gt;<span class="s1">尚未偵測</span>&lt;/span&gt;&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1">&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;script&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const video = document.getElementById('video');</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const canvas = document.getElementById('canvas');</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const captureBtn = document.getElementById('btn-capture');</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const statusText = document.getElementById('status');</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const rawTextDisplay = document.getElementById('raw-text');</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const dateDisplay = document.getElementById('detected-date');</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>// 1. <span class="s1">初始化相機（優先調用後鏡頭</span> environment<span class="s1">）</span></p>
-<p class="p1"><span class="Apple-converted-space">    </span>async function initCamera() {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>try {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const stream = await navigator.mediaDevices.getUserMedia({</p>
-<p class="p1"><span class="Apple-converted-space">                </span>video: { facingMode: 'environment' },</p>
-<p class="p1"><span class="Apple-converted-space">                </span>audio: false</p>
-<p class="p1"><span class="Apple-converted-space">            </span>});</p>
-<p class="p1"><span class="Apple-converted-space">            </span>video.srcObject = stream;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>} catch (err) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>statusText.innerText = "<span class="s1">無法開啟相機，請檢查權限設定。</span>";</p>
-<p class="p1"><span class="Apple-converted-space">            </span>console.error("Camera error:", err);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>// 2. <span class="s1">點擊拍照並啟動</span> OCR <span class="s1">辨識</span></p>
-<p class="p1"><span class="Apple-converted-space">    </span>captureBtn.addEventListener('click', async () =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>// <span class="s1">將視訊畫面畫到</span> Canvas <span class="s1">上擷取圖片</span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>const context = canvas.getContext('2d');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>canvas.width = video.videoWidth;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>canvas.height = video.videoHeight;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>context.drawImage(video, 0, 0, canvas.width, canvas.height);</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// <span class="s1">取得圖片的</span> Base64 <span class="s1">資料網址</span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>const dataUrl = canvas.toDataURL('image/jpeg');</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// <span class="s1">更新</span> UI <span class="s1">狀態</span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>captureBtn.disabled = true;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>statusText.innerText = "AI <span class="s1">正在辨識文字中，請稍候</span>...";</p>
-<p class="p1"><span class="Apple-converted-space">        </span>rawTextDisplay.innerText = "";</p>
-<p class="p1"><span class="Apple-converted-space">        </span>dateDisplay.innerText = "<span class="s1">掃描中</span>...";</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>try {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>// 3. <span class="s1">呼叫</span> Tesseract.js <span class="s1">進行英文與數字辨識</span> (eng)</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const result = await Tesseract.recognize(dataUrl, 'eng', {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>logger: m =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>if (m.status === 'recognizing text') {</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>statusText.innerText = `<span class="s1">辨識進度</span>: ${Math.round(m.progress * 100)}%`;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>});</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>const text = result.data.text;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>rawTextDisplay.innerText = text; // <span class="s1">顯示原始辨識文字</span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>statusText.innerText = "<span class="s1">辨識完成！</span>";</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// 4. <span class="s1">用正則表達式</span> (Regex) <span class="s1">撈出常見的日期格式</span> (<span class="s1">如</span> 2026.09.10 <span class="s1">或</span> 10/09/2026)</p>
-<p class="p1"><span class="Apple-converted-space">            </span>// <span class="s1">這個</span> Regex <span class="s1">可以匹配</span> YYYY/MM/DD, DD/MM/YYYY, YYYY.MM.DD <span class="s1">等包含點、斜線或橫線的數字</span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>const dateRegex = /(\d{2,4}[.\/\-]\d{2}[.\/\-]\d{2,4})/g;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const matches = text.match(dateRegex);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (matches &amp;&amp; matches.length &gt; 0) {</p>
-<p class="p3"><span class="s3"><span class="Apple-converted-space">                </span>// </span>如果有找到多個，先顯示第一個匹配到的日期</p>
-<p class="p1"><span class="Apple-converted-space">                </span>dateDisplay.innerText = matches.join(', ');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>dateDisplay.innerText = "<span class="s1">未發現明顯日期格式，請調整角度再試一次。</span>";</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>} catch (error) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>statusText.innerText = "<span class="s1">辨識過程中發生錯誤。</span>";</p>
-<p class="p1"><span class="Apple-converted-space">            </span>console.error("OCR Error:", error);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>} finally {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>captureBtn.disabled = false;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>});</p>
-<p class="p2"><br></p>
-<p class="p3"><span class="s3"><span class="Apple-converted-space">    </span>// </span>網頁載入時自動開相機</p>
-<p class="p1"><span class="Apple-converted-space">    </span>window.addEventListener('DOMContentLoaded', initCamera);</p>
-<p class="p1">&lt;/script&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;/body&gt;</p>
-<p class="p1">&lt;/html&gt;</p>
+
+<div class="container">
+    <h2>📸 效期拍照辨識測試</h2>
+    <p>請將鏡頭對準包裝上的日期（如：HSD/EXP/數字）</p>
+    
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas"></canvas>
+    
+    <br>
+    <button id="btn-capture">📷 拍照並辨識</button>
+    
+    <div id="result-box">
+        <p><strong>系統狀態：</strong> <span id="status" class="status">等待拍照...</span></p>
+        <p><strong>辨識出的所有文字：</strong></p>
+        <pre id="raw-text" style="white-space: pre-wrap; background: #eee; padding: 10px; border-radius: 4px; min-height: 50px;"></pre>
+        <p><strong>偵測到的疑似日期：</strong> <span id="detected-date" class="highlight">尚未偵測</span></p>
+    </div>
+</div>
+
+<script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const captureBtn = document.getElementById('btn-capture');
+    const statusText = document.getElementById('status');
+    const rawTextDisplay = document.getElementById('raw-text');
+    const dateDisplay = document.getElementById('detected-date');
+
+    async function initCamera() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment' },
+                audio: false
+            });
+            video.srcObject = stream;
+        } catch (err) {
+            statusText.innerText = "無法開啟相機，請檢查 HTTPS 設定或權限。";
+            console.error("Camera error:", err);
+        }
+    }
+
+    captureBtn.addEventListener('click', async () => {
+        const context = canvas.getContext('2d');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        const dataUrl = canvas.toDataURL('image/jpeg');
+        
+        captureBtn.disabled = true;
+        statusText.innerText = "AI 正在辨識文字中，請稍候...";
+        rawTextDisplay.innerText = "";
+        dateDisplay.innerText = "掃描中...";
+
+        try {
+            const result = await Tesseract.recognize(dataUrl, 'eng', {
+                logger: m => {
+                    if (m.status === 'recognizing text') {
+                        statusText.innerText = `辨識進度: ${Math.round(m.progress * 100)}%`;
+                    }
+                }
+            });
+
+            const text = result.data.text;
+            rawTextDisplay.innerText = text;
+            statusText.innerText = "辨識完成！";
+
+            const dateRegex = /(\d{2,4}[.\/\-]\d{2}[.\/\-]\d{2,4})/g;
+            const matches = text.match(dateRegex);
+
+            if (matches && matches.length > 0) {
+                dateDisplay.innerText = matches.join(', ');
+            } else {
+                dateDisplay.innerText = "未發現明顯日期格式，請調整角度再試一次。";
+            }
+
+        } catch (error) {
+            statusText.innerText = "辨識過程中發生錯誤。";
+            console.error("OCR Error:", error);
+        } finally {
+            captureBtn.disabled = false;
+        }
+    });
+
+    window.addEventListener('DOMContentLoaded', initCamera);
+</script>
+
 </body>
 </html>
