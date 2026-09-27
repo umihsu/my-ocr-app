@@ -3,38 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>效期拍照辨識測試</title>
-    <!-- 修正後的 Tesseract.js 正確 CDN 網址 -->
-    <script src="https://jsdelivr.net"></script>
+    <title>Gemini 免費版效期辨識測試</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; text-align: center; background-color: #f5f5f5; }
-        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        video, canvas { width: 100%; max-width: 400px; border-radius: 4px; background: #000; margin-top: 10px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 15px; text-align: center; background-color: #f8f9fa; }
+        .container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        video { width: 100%; max-width: 400px; border-radius: 8px; background: #000; margin-top: 10px; }
         canvas { display: none; }
-        button { background-color: #007bff; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 4px; cursor: pointer; margin: 10px 5px; }
-        button:disabled { background-color: #ccc; }
-        #result-box { margin-top: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 4px; text-align: left; background: #fafafa; }
-        .status { color: #666; font-style: italic; }
-        .highlight { color: #d9534f; font-weight: bold; font-size: 1.2em; }
+        .key-box { margin-bottom: 15px; padding: 10px; border: 1px dashed #007bff; border-radius: 6px; background: #ebf5ff; }
+        input[type="password"] { width: 80%; padding: 8px; font-size: 14px; border-radius: 4px; border: 1px solid #ccc; text-align: center; }
+        button { background-color: #007bff; color: white; border: none; padding: 14px 28px; font-size: 16px; border-radius: 8px; cursor: pointer; margin: 15px 0; width: 100%; max-width: 400px; font-weight: bold; }
+        button:disabled { background-color: #6c757d; opacity: 0.6; }
+        #result-box { margin-top: 15px; padding: 15px; border: 1px solid #e9ecef; border-radius: 8px; text-align: left; background: #fff; }
+        .status { color: #28a745; font-weight: bold; }
+        .highlight { color: #dc3545; font-weight: bold; font-size: 1.2em; white-space: pre-line; margin-top: 5px; }
+        pre { white-space: pre-wrap; background: #f1f3f5; padding: 10px; border-radius: 6px; font-size: 13px; max-height: 150px; overflow-y: auto; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>📸 效期拍照辨識測試</h2>
-    <p>請將鏡頭對準包裝上的日期（如：HSD/EXP/數字）</p>
+    <h2>📸 Gemini 商品智能效期辨識</h2>
     
+    <!-- 安全防護：手動輸入 Key，保護金鑰不流向 GitHub -->
+    <div class="key-box">
+        <label for="api-key">🔑 請輸入您的 Gemini API Key：</label><br><br>
+        <input type="password" id="api-key" placeholder="AIzaSy... 開頭的免費金鑰">
+    </div>
+
     <video id="video" autoplay playsinline></video>
     <canvas id="canvas"></canvas>
     
-    <br>
-    <button id="btn-capture">📷 拍照並辨識</button>
+    <button id="btn-capture">📷 拍照並讓 Gemini 辨識</button>
     
     <div id="result-box">
-        <p><strong>系統狀態：</strong> <span id="status" class="status">等待拍照...</span></p>
-        <p><strong>辨識出的所有文字：</strong></p>
-        <pre id="raw-text" style="white-space: pre-wrap; background: #eee; padding: 10px; border-radius: 4px; min-height: 50px;"></pre>
-        <p><strong>偵測到的疑似日期：</strong> <span id="detected-date" class="highlight">尚未偵測</span></p>
+        <p><strong>系統狀態：</strong> <span id="status" style="color: #666;">等待拍照...</span></p>
+        <p><strong>✨ Gemini 辨識結果：</strong> <span id="detected-date" class="highlight">尚未掃描</span></p>
+        <p><strong>原始 JSON 回傳：</strong></p>
+        <pre id="raw-text">等待資料中...</pre>
     </div>
 </div>
 
@@ -43,60 +48,90 @@
     const canvas = document.getElementById('canvas');
     const captureBtn = document.getElementById('btn-capture');
     const statusText = document.getElementById('status');
-    const rawTextDisplay = document.getElementById('raw-text');
     const dateDisplay = document.getElementById('detected-date');
+    const rawTextDisplay = document.getElementById('raw-text');
 
+    // 初始化相機
     async function initCamera() {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'environment' },
+                video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
                 audio: false
             });
             video.srcObject = stream;
         } catch (err) {
-            statusText.innerText = "無法開啟相機，請檢查 HTTPS 設定或權限。";
-            console.error("Camera error:", err);
+            statusText.innerText = "無法開啟相機，請確認瀏覽器權限。";
         }
     }
 
+    // 點擊拍照並呼叫 Gemini API
     captureBtn.addEventListener('click', async () => {
+        const apiKey = document.getElementById('api-key').value.trim();
+        if (!apiKey) {
+            alert("請先輸入您的 Gemini API Key 才能進行測試喔！");
+            return;
+        }
+
+        // 擷取畫面
         const context = canvas.getContext('2d');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
         
-        const dataUrl = canvas.toDataURL('image/jpeg');
-        
+        // 取得純 Base64 字串
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        const base64Data = dataUrl.split(',')[1];
+
+        // 更新 UI
         captureBtn.disabled = true;
-        statusText.innerText = "AI 正在辨識文字中，請稍候...";
-        rawTextDisplay.innerText = "";
-        dateDisplay.innerText = "掃描中...";
+        statusText.innerText = "🚀 正在連線 Google Gemini 視覺大腦...";
+        dateDisplay.innerText = "分析中...";
+
+        // 設定要求 Gemini 嚴格遵守的 JSON 格式指示
+        const promptInstruction = "你是一個全方位的物品效期小幫手。請分析使用者上傳的商品外包裝照片，並嚴格回傳以下 JSON 格式，不要包含任何 markdown 標籤或額外的解釋文字： {\"product_name\": \"商品的品牌與詳細中英文名稱\", \"category\": \"分類（食品/化妝品/保養品/藥品/生活用品）\", \"estimated_shelf_life_days\": 數字（預估該產品在全新未開封狀態下的標準保存天數，例如 540）}";
 
         try {
-            const result = await Tesseract.recognize(dataUrl, 'eng', {
-                logger: m => {
-                    if (m.status === 'recognizing text') {
-                        statusText.innerText = `辨識進度: ${Math.round(m.progress * 100)}%`;
+            // 呼叫 Gemini 1.5 Flash 視覺 API (使用 v1beta 支援 JSON 輸出)
+            const response = await fetch(`https://googleapis.com{apiKey}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [
+                            { text: promptInstruction },
+                            {
+                                inlineData: {
+                                    mimeType: "image/jpeg",
+                                    data: base64Data
+                                }
+                            }
+                        ]
+                    }],
+                    generationConfig: {
+                        responseMimeType: "application/json" // 強制要求模型只回傳結構化 JSON
                     }
-                }
+                })
             });
 
-            const text = result.data.text;
-            rawTextDisplay.innerText = text;
-            statusText.innerText = "辨識完成！";
+            if (!response.ok) throw new Error(`HTTP 錯誤！狀態碼: ${response.status}`);
 
-            const dateRegex = /(\d{2,4}[.\/\-]\d{2}[.\/\-]\d{2,4})/g;
-            const matches = text.match(dateRegex);
+            const data = await response.json();
+            
+            // 解析 Gemini 回傳的文字內容
+            const aiTextResponse = data.candidates[0].content.parts[0].text;
+            const resultJson = JSON.parse(aiTextResponse);
 
-            if (matches && matches.length > 0) {
-                dateDisplay.innerText = matches.join(', ');
-            } else {
-                dateDisplay.innerText = "未發現明顯日期格式，請調整角度再試一次。";
-            }
+            // 渲染結果
+            statusText.innerText = "完成！";
+            dateDisplay.innerText = `📦 品名：${resultJson.product_name}\n🗂️ 類別：${resultJson.category}\n⏳ 預估保存上限：${resultJson.estimated_shelf_life_days} 天`;
+            rawTextDisplay.innerText = JSON.stringify(resultJson, null, 2);
 
         } catch (error) {
-            statusText.innerText = "辨識過程中發生錯誤。";
-            console.error("OCR Error:", error);
+            statusText.innerText = "❌ 辨識出錯，請確認 Key 是否正確或額度正常。";
+            dateDisplay.innerText = "辨識失敗";
+            console.error(error);
         } finally {
             captureBtn.disabled = false;
         }
